@@ -1,73 +1,78 @@
 pipeline {
     agent any
 
-    options {
-        skipStagesAfterUnstable()
-    }
-
     tools {
         maven 'Maven3'
     }
-environment {
-    NEXUS_URL = 'localhost:8081'
-    NEXUS_REPO = 'maven-releases'
-    NEXUS_CREDENTIALS = 'nexus-admin'
-}
 
+    environment {
+        // Nexus Config
+        NEXUS_URL = 'localhost:8081'
+        NEXUS_REPO = 'maven-releases'
+        NEXUS_CREDENTIALS_ID = 'nexus-admin'
+
+        // Maven Coordinates
+        GROUP_ID = 'com.example'
+        ARTIFACT_ID = 'springboot-helloworld'
+        VERSION = '1.0.0'
+        PACKAGING = 'jar'
+    }
 
     stages {
-        stage('Checkout Source Code') {
+
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/praisb1/gs-spring-boot.git'
+                checkout scm
             }
         }
 
         stage('Test') {
             steps {
-                sh 'git --version'
-                sh 'mvn --version'
-                sh 'mvn clean test' // Example for a Maven project
+                sh 'mvn clean test'
             }
         }
 
-        stage('Build and Package') {
+        stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
             }
         }
 
-        stage('Archive Artifacts') {
+        stage('Archive') {
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
-    }
-stage('Upload to Nexus') {
-    steps {
-        script {
-            def jarFile = sh(
-                script: "ls target/*.jar",
-                returnStdout: true
-            ).trim()
 
-            nexusArtifactUploader(
-                nexusVersion: 'nexus3',
-                protocol: 'http',
-                nexusUrl: "${NEXUS_URL}",
-                groupId: "${GROUP_ID}",
-                version: "${VERSION}",
-                repository: "${NEXUS_REPO}",
-                credentialsId: "${NEXUS_CREDENTIALS_ID}",
-                artifacts: [[
-                    artifactId: "${ARTIFACT_ID}",
-                    classifier: '',
-                    file: jarFile,
-                    type: "${PACKAGING}"
-                ]]
-            )
+        stage('Upload to Nexus') {
+            steps {
+                script {
+                    // Locate the built jar file
+                    def jarFile = sh(script: "ls target/*.jar", returnStdout: true).trim()
+
+                    echo "Uploading ${jarFile} to Nexus..."
+
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: "${NEXUS_URL}",
+                        groupId: GROUP_ID,
+                        version: VERSION,
+                        repository: NEXUS_REPO,
+                        credentialsId: NEXUS_CREDENTIALS_ID,
+                        artifacts: [
+                            [
+                                artifactId: ARTIFACT_ID,
+                                classifier: '',
+                                file: jarFile,
+                                type: PACKAGING
+                            ]
+                        ]
+                    )
+                }
+            }
         }
     }
-}
 
     post {
         always {
