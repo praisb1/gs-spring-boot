@@ -8,6 +8,12 @@ pipeline {
     tools {
         maven 'Maven3'
     }
+environment {
+    NEXUS_URL = 'localhost:8081'
+    NEXUS_REPO = 'maven-releases'
+    NEXUS_CREDENTIALS = 'nexus-admin'
+}
+
 
     stages {
         stage('Checkout Source Code') {
@@ -36,6 +42,32 @@ pipeline {
             }
         }
     }
+stage('Upload to Nexus') {
+    steps {
+        script {
+            def jarFile = sh(
+                script: "ls target/*.jar",
+                returnStdout: true
+            ).trim()
+
+            nexusArtifactUploader(
+                nexusVersion: 'nexus3',
+                protocol: 'http',
+                nexusUrl: "${NEXUS_URL}",
+                groupId: "${GROUP_ID}",
+                version: "${VERSION}",
+                repository: "${NEXUS_REPO}",
+                credentialsId: "${NEXUS_CREDENTIALS_ID}",
+                artifacts: [[
+                    artifactId: "${ARTIFACT_ID}",
+                    classifier: '',
+                    file: jarFile,
+                    type: "${PACKAGING}"
+                ]]
+            )
+        }
+    }
+}
 
     post {
         always {
