@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         // Nexus Config
-        NEXUS_URL = 'localhost:8081'
+        NEXUS_URL = 'http://localhost:8081'
         NEXUS_REPO = 'maven-releases'
         NEXUS_CREDENTIALS_ID = 'nexus-admin'
 
@@ -38,7 +38,7 @@ pipeline {
             }
         }
 
-        stage('Archive') {
+        stage('Archive Artifacts') {
             steps {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
@@ -47,8 +47,10 @@ pipeline {
         stage('Upload to Nexus') {
             steps {
                 script {
-                    // Locate the built jar file
-                    def jarFile = sh(script: "ls target/*.jar", returnStdout: true).trim()
+                    def jarFile = sh(
+                        script: "ls target/*.jar",
+                        returnStdout: true
+                    ).trim()
 
                     echo "Uploading ${jarFile} to Nexus..."
 
@@ -60,14 +62,12 @@ pipeline {
                         version: VERSION,
                         repository: NEXUS_REPO,
                         credentialsId: NEXUS_CREDENTIALS_ID,
-                        artifacts: [
-                            [
-                                artifactId: ARTIFACT_ID,
-                                classifier: '',
-                                file: jarFile,
-                                type: PACKAGING
-                            ]
-                        ]
+                        artifacts: [[
+                            artifactId: ARTIFACT_ID,
+                            classifier: '',
+                            file: jarFile,
+                            type: PACKAGING
+                        ]]
                     )
                 }
             }
@@ -86,3 +86,4 @@ pipeline {
         }
     }
 }
+
