@@ -9,7 +9,7 @@ pipeline {
         // Nexus Config
         NEXUS_URL = 'localhost:8081' 
         NEXUS_REPO = 'maven-releases'
-        NEXUS_CREDENTIALS_ID = 'nexus-admin'
+        NEXUS_CREDENTIALS_ID = 'nexus-hw6'
 
         // Maven Coordinates
         GROUP_ID = 'com.example'
