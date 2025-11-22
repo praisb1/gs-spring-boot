@@ -13,9 +13,9 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.2.1</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <!--  Add distributionManagement here, directly under <project> -->
     <distributionManagement>
         <repository>
             <id>nexus</id>
@@ -27,10 +27,22 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+
     <dependencies>
+        <!-- Web starter brings in spring-web annotations -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Optional: testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -43,3 +55,4 @@
         </plugins>
     </build>
 </project>
+
