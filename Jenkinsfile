@@ -42,6 +42,14 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+        stage('Deploy to Nexus') {
+    steps {
+        configFileProvider([configFile(fileId: 'maven-settings-nexus', variable: 'MAVEN_SETTINGS')]) {
+            sh 'mvn deploy -s $MAVEN_SETTINGS -DskipTests'
+        }
+    }
+}
+
 
         stage('Upload to Nexus') {
             steps {
