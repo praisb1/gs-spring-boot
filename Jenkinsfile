@@ -27,7 +27,7 @@ pipeline {
                     credentialsId: 'nexus-admin',
                     artifacts: [
                         [
-                            artifactId: 'gs-spring-boot',
+                            artifactId: 'springboot-helloworld',
                             classifier: '',
                             file: 'target/springboot-helloworld-1.0.0.jar',
                             type: 'jar'
