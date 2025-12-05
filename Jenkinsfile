@@ -1,95 +1,49 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'
-    }
-
-    environment {
-        // Nexus Config
-        NEXUS_URL = 'localhost:8081' 
-        NEXUS_REPO = 'maven-releases'
-        NEXUS_CREDENTIALS_ID = 'nexus-admin'
-
-        // Maven Coordinates
-        GROUP_ID = 'com.example'
-        ARTIFACT_ID = 'springboot-helloworld'
-        VERSION = '1.0.0'
-        PACKAGING = 'jar'
-    }
-
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'mvn clean test'
-            }
-        }
-
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh "mvn clean package"
             }
         }
-
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            }
-        }
-        stage('Deploy to Nexus') {
-    steps {
-        configFileProvider([configFile(fileId: 'maven-settings-nexus', variable: 'MAVEN_SETTINGS')]) {
-            sh 'mvn deploy -s $MAVEN_SETTINGS -DskipTests'
-        }
-    }
-}
-
 
         stage('Upload to Nexus') {
             steps {
-                script {
-                    def jarFile = sh(
-                        script: "ls target/*.jar",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Uploading ${jarFile} to Nexus..."
-
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        nexusUrl: "${NEXUS_URL}",
-                        groupId: GROUP_ID,
-                        version: VERSION,
-                        repository: NEXUS_REPO,
-                        credentialsId: NEXUS_CREDENTIALS_ID,
-                        artifacts: [[
-                            artifactId: ARTIFACT_ID,
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: 'localhost:8081',
+                    groupId: 'com.example',
+                    version: '1.0.0',
+                    repository: 'maven-releases',
+                    credentialsId: 'nexus-admin',
+                    artifacts: [
+                        [
+                            artifactId: 'gs-spring-boot',
                             classifier: '',
-                            file: jarFile,
-                            type: PACKAGING
-                        ]]
-                    )
-                }
+                            file: 'target/gs-spring-boot-0.1.0.jar',
+                            type: 'jar'
+                        ]
+                    ]
+                )
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline finished.'
-        }
         success {
-            echo 'Build successful!'
+            echo "Build & Upload Successful!"
         }
         failure {
-            echo 'Build failed!'
+            echo "Build Failed!"
         }
     }
 }
