@@ -29,7 +29,7 @@ pipeline {
                         [
                             artifactId: 'gs-spring-boot',
                             classifier: '',
-                            file: 'target/gs-spring-boot-0.1.0.jar',
+                            file: 'target/gs-spring-boot-helloworld-0.1.0.jar',
                             type: 'jar'
                         ]
                     ]
